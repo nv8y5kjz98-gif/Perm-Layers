@@ -6,8 +6,8 @@
 <title>Пермь: слои времени</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css">
 <style>
-:root{--bg:#f6f1e7;--card:#fffdf8;--ink:#2a2118;--mut:#6f6354;--acc:#a8431f;--line:#d8cbb2}
-@media (prefers-color-scheme:dark){:root{--bg:#1b1713;--card:#262019;--ink:#f1e8d8;--mut:#a99d8a;--acc:#e8875a;--line:#43382a}}
+:root{--bg:#f8f1ef;--card:#fffaf8;--ink:#2b1a1c;--mut:#7a6366;--acc:#b3202a;--line:#e6d2d0}
+@media (prefers-color-scheme:dark){:root{--bg:#1c1213;--card:#271a1c;--ink:#f4e7e6;--mut:#b49c9e;--acc:#ff6b6f;--line:#4a2f32}}
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:760px;padding:14px;background:var(--bg);color:var(--ink);font:16px/1.45 Georgia,serif}
 h1{font-size:22px;margin:4px 0}
@@ -26,6 +26,11 @@ button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
 .tag{font:12px system-ui,sans-serif;color:var(--acc);text-transform:uppercase}
 .src{font:12px system-ui,sans-serif}.src a{color:var(--acc)}
 #modes button{font-weight:600}
+h1{border-left:4px solid var(--acc);padding-left:10px}
+.card{box-shadow:0 1px 4px rgba(90,20,28,.1)}
+button{transition:background .2s,border-color .2s}
+button:hover{border-color:var(--acc)}
+#year{letter-spacing:.5px}
 .note{font:12px system-ui,sans-serif;color:var(--mut);margin-top:10px}
 details{margin-top:10px}summary{font:600 14px system-ui,sans-serif;cursor:pointer}
 details input,details textarea,details select{width:100%;margin:4px 0;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:14px system-ui,sans-serif}
@@ -41,7 +46,7 @@ details input,details textarea,details select{width:100%;margin:4px 0;padding:8p
 <input id="sl" type="range" min="1723" max="2026" value="1723" aria-label="Год">
 <div class="row nw" id="eras"></div>
 <div class="row">
-<button id="nb">Рядом со мной</button><button id="shr">Поделиться</button><button id="qz">Викторина</button>
+<button id="pl">▶ Воспроизвести</button><button id="nb">Рядом со мной</button><button id="shr">Поделиться</button><button id="qz">Викторина</button>
 </div>
 <p class="note" id="msg"></p>
 <div class="card" id="pcard" hidden></div>
@@ -64,7 +69,7 @@ details input,details textarea,details select{width:100%;margin:4px 0;padding:8p
 if(typeof ol==="undefined"){document.getElementById("map").textContent="Карта не загрузилась: проверьте интернет.";throw 0;}
 // ===== ДАННЫЕ: правьте здесь =====
 // c: категория, p: [широта, долгота], s: источники. Если p:null, положение ищется по адресу a через OpenStreetMap (нужен интернет); найденное запоминается в браузере. Точные координаты можно вписать в p вручную.
-var CATS={ind:"Промышленность",trans:"Транспорт",cult:"Культура",rel:"Религия",sci:"Наука",prod:"Производство",med:"Госпитали",mem:"Память"};
+var CATS={ind:"Промышленность",trans:"Транспорт",cult:"Культура",rel:"Религия",sci:"Наука",prod:"Производство",evac:"Эвакуация",med:"Госпитали",mem:"Память"};
 var C=[58.0105,56.2502];
 var PINS=[
 {n:"Егошихинский завод",y:1723,c:"ind",p:[58.0218,56.2543],t:"Строительство завода в логу реки Егошихи началось 4 (15) мая 1723 года по замыслу В. Татищева и закончилось к январю 1724 года: плотина, шесть плавильных печей, рудные амбары. Эту дату считают началом истории Перми. Метка стоит у устья Егошихи.",s:[["Википедия: Егошиха","https://en.wikipedia.org/wiki/Yegoshikha_(river)"],["Циклопедия: 300-летие Перми","https://cyclowiki.org/wiki/300-летие_Перми"]]},
@@ -80,9 +85,13 @@ var PINS=[
 // ---- Режим «Великая Отечественная война» (mode:"war"; ref — взять координаты у метки города) ----
 {n:"Мотовилихинские заводы",mode:"war",ref:"Мотовилихинские заводы",y:1941,c:"prod",p:null,t:"Завод работал на фронт: в годы Великой Отечественной войны здесь выпущено 48,6 тыс. орудий.",s:[["Большая российская энциклопедия","https://bigenc.ru/c/istoriia-motovilikhinskikh-zavodov-4cba7c"]]},
 {n:"Моторный завод №19",mode:"war",y:1941,c:"prod",p:null,a:"Пермь, Комсомольский проспект, 93",t:"Моторостроительный завод №19 имени Сталина (позже имени Свердлова). Серийный выпуск мотора АШ-82 начат в мае 1941 года. За годы войны с конвейера сошли 31 864 мотора, ими оснащён каждый шестой самолёт ВВС СССР, к 1945 году выпуск достиг 500 и более моторов в месяц. На заводе работали и подростки.",s:[["Циклопедия: Пермский моторный завод","https://cyclowiki.org/wiki/Пермский_моторный_завод"],["Циклопедия: А. Г. Солдатов","https://cyclowiki.org/wiki/Солдатов,_Анатолий_Григорьевич"]]},
-{n:"Эвакуированный театр им. Кирова",mode:"war",ref:"Театр оперы и балета",y:1941,c:"cult",p:null,t:"С осени 1941 года в Молотове работал эвакуированный Ленинградский театр оперы и балета имени Кирова. В 1942 году на молотовской сцене состоялась премьера балета Хачатуряна «Гаянэ» с Галиной Улановой; по данным краевой прессы, театр показал 27 постановок и более 1000 спектаклей, а Прокофьев в Молотове писал «Золушку». В 1944 году, после снятия блокады, театр вернулся в Ленинград.",s:[["Мариинский театр","https://www.mariinsky.ru/en/about/ww2/1942/04/"],["Новый компаньон, №859","https://www.newsko.ru/media/2921857/07-nk-859.pdf"]]},
+{n:"Эвакуированный театр им. Кирова",mode:"war",ref:"Театр оперы и балета",y:1941,d:"1941-10",c:"cult",p:null,t:"С осени 1941 года в Молотове работал эвакуированный Ленинградский театр оперы и балета имени Кирова. В 1942 году на молотовской сцене состоялась премьера балета Хачатуряна «Гаянэ» с Галиной Улановой; по данным краевой прессы, театр показал 27 постановок и более 1000 спектаклей, а Прокофьев в Молотове писал «Золушку». В 1944 году, после снятия блокады, театр вернулся в Ленинград.",s:[["Мариинский театр","https://www.mariinsky.ru/en/about/ww2/1942/04/"],["Новый компаньон, №859","https://www.newsko.ru/media/2921857/07-nk-859.pdf"]]},
 {n:"Школа №22 (эвакогоспиталь)",mode:"war",y:1941,c:"med",p:null,a:"Пермь, улица Сибирская, 80",t:"Здание построено как училище для слепых (создано в 1889 году). В годы Великой Отечественной войны здесь располагался эвакуационный госпиталь, в 1943 году школа стала женской.",s:[["Собака.ru","https://www.sobaka.ru/prm/city/science/188348"]]},
-{n:"Монумент «Героям фронта и тыла»",mode:"war",y:1945,c:"mem",p:[58.00917,56.2231],t:"Открыт 9 мая 1985 года к 40-летию Победы на городской эспланаде. Три фигуры — рабочий, воин и Мать-Родина — одного роста как знак равенства подвига фронта и тыла. Рабочий обращён на восток, воин — на запад.",s:[["Знание.Россия","https://znanierussia.ru/articles/Памятник_героям_фронта_и_тыла"],["Купибилет","https://www.kupibilet.ru/gid/rossiia/perm/pamiatnik-geroiam-fronta-i-tyla"]]},
+{n:"Монумент «Героям фронта и тыла»",mode:"war",y:1945,d:"1945-05",c:"mem",p:[58.00917,56.2231],t:"Открыт 9 мая 1985 года к 40-летию Победы на городской эспланаде. Три фигуры — рабочий, воин и Мать-Родина — одного роста как знак равенства подвига фронта и тыла. Рабочий обращён на восток, воин — на запад.",s:[["Знание.Россия","https://znanierussia.ru/articles/Памятник_героям_фронта_и_тыла"],["Купибилет","https://www.kupibilet.ru/gid/rossiia/perm/pamiatnik-geroiam-fronta-i-tyla"]]},
+{n:"Станция Пермь II",mode:"war",y:1941,d:"1941-07",c:"evac",p:null,a:"Пермь, улица Ленина, 89",t:"С июля 1941 года на Пермь II почти ежедневно приходили поезда с ранеными бойцами и эшелоны с эвакуированными. Сегодня на вокзале проходит экскурсия «Шли эшелоны на фронт» о жизни тылового Молотова.",s:[["Новый компаньон, №859","https://www.newsko.ru/media/2921856/06-nk-859.pdf"],["Культура.РФ","https://www.culture.ru/events/3159307/ekskursiya-shli-eshelony-na-front"]]},
+{n:"Речной вокзал: баржи с эвакуированными",mode:"war",ref:"Речной вокзал",y:1941,c:"evac",p:null,t:"К Речному вокзалу причаливали суда с запада страны: на пароходах и баржах в Пермь везли эвакуированных ленинградцев, детей и раненых бойцов.",s:[["Российская газета (Рамблер)","https://news.rambler.ru/community/55459234-v-permi-postavili-pamyatnik-evakuirovannym-leningradtsam/"]]},
+{n:"Русский музей в Перми",mode:"war",ref:"Спасо-Преображенский собор",y:1941,c:"cult",p:null,t:"Основная эвакуированная коллекция Русского музея разместилась в музеях Перми. Экспонаты везли на барже по Волге и Каме и поместили в Пермской галерее, которая в те годы работала в здании собора.",s:[["Российская газета (Рамблер)","https://news.rambler.ru/community/55459234-v-permi-postavili-pamyatnik-evakuirovannym-leningradtsam/"],["Краеведческий диктант 2022","https://anichkov.ru/uploads/ik_dic_answ2022.pdf"]]},
+{n:"Монумент «Эвакуация»",mode:"war",ref:"Речной вокзал",off:[-0.0006,0.001],y:1945,d:"1945-05",c:"mem",p:null,t:"Бронзовые фигуры эвакуированных ленинградцев на набережной Камы, открыты в октябре 2025 года (положение метки приблизительное, рядом с Речным вокзалом). Прототипы двух фигур — Любовь Антонова, сотрудница Эрмитажа, и писательница Вера Панова. В композицию вмонтирован кожух колеса парохода «Вера Фигнер», на постаменте из балтийского камня — стихи Николая Домовитова.",s:[["Российская газета (Рамблер)","https://news.rambler.ru/community/55459234-v-permi-postavili-pamyatnik-evakuirovannym-leningradtsam/"],["Россети Урал","https://eepir.ru/new/v-nbsp-stolice-prikamya-pri-podderzhke-kompanii-rosseti-ural-ustanovlen-monument-evakuaciya/"]]},
 // Заготовки: впишите координаты (клик по карте) вместо null — и метка появится
 {n:"Станция Пермь II",y:1899,c:"trans",p:null,a:"Пермь, улица Ленина, 89",t:"Станция Заимки построена в 1899 году. 1 ноября 1909 года открыто здание вокзала «Пермь-Заимки», через год станция переименована в Пермь II; здесь проходит Транссибирская магистраль.",s:[["Википедия","https://en.wikipedia.org/wiki/Perm_II_railway_station"]]},
 {n:"Пермский университет",y:1916,c:"sci",p:null,a:"Пермь, улица Букирева, 15",t:"Первый университет на Урале открыт 1 (14) октября 1916 года как Пермское отделение Петроградского университета; в июле 1917 года на его базе открыт Пермский университет. Адрес: ул. Букирева, 15.",s:[["Рувики: Пермь","https://ru.ruwiki.ru/wiki/Пермь"]]},
@@ -116,7 +125,7 @@ var Q=[
 ["Кто из деятелей культуры провёл юность в особняке на Сибирской, 33?",["Сергей Дягилев","Пётр Чайковский","Борис Пастернак"],0]];
 // ===== КОД =====
 var EPW=[
-{y:1941,h:"Эвакуация и перестройка",t:"В 1941 году на территории Молотовской области оказались более 120 предприятий и около 300 тыс. рабочих. В июле Молотов принял пять пороховых заводов, к октябрю запущена первая очередь нового порохового завода. 20 октября 1941 года в область доставили около 20 тыс. детей из Ленинградской области и около 90 тыс. детей и взрослых из Ленинграда."},
+{y:1941,h:"Эвакуация и перестройка",t:"В 1941 году на территории Молотовской области оказались более 120 предприятий и около 300 тыс. рабочих. В июле Молотов принял пять пороховых заводов, к октябрю запущена первая очередь нового порохового завода. 20 октября 1941 года в область доставили около 20 тыс. детей из Ленинградской области и около 90 тыс. детей и взрослых из Ленинграда. Из Ленинграда перебрались театр имени Кирова и Русский музей; по подсчётам историка Павла Микова, в Пермь эвакуировали около 379 тыс. ленинградцев, примерно 100 тыс. из них — дети. 186 детей сотрудников Эрмитажа поселили в посёлке Ляды в 40 км от Перми."},
 {y:1942,h:"Фронт и культура тыла",t:"Мотовилихинские заводы и моторостроительный завод №19 работают на фронт. На сцене эвакуированного Ленинградского театра оперы и балета проходит премьера балета Хачатуряна «Гаянэ»."},
 {y:1943,h:"Госпитали и школа балета",t:"7 февраля 1943 года начались занятия Пермского отделения Ленинградского хореографического училища. В октябре 1941 года в регионе работали 93 эвакогоспиталя, к концу войны — 149."},
 {y:1944,h:"Возвращение театра",t:"После снятия блокады Ленинграда театр оперы и балета и хореографическое училище вернулись в Ленинград."},
@@ -126,18 +135,26 @@ var QW=[
 ["Какой ленинградский театр был эвакуирован в Молотов?",["Театр оперы и балета имени Кирова","Александринский театр","Театр музыкальной комедии"],0],
 ["Когда открыт монумент «Героям фронта и тыла»?",["9 мая 1985","9 мая 1965","22 июня 1991"],0],
 ["Сколько моторов выпустил завод №19 за годы войны?",["31 864","3 186","318 640"],0],
-["Как назывался город в 1941–1945 годах?",["Молотов","Пермь","Свердловск"],0]];
-var MODES={city:{y0:1723,y1:2026,cats:["ind","trans","cult","rel","sci"]},war:{y0:1941,y1:1945,cats:["prod","cult","med","mem"]}};
+["Как назывался город в 1941–1945 годах?",["Молотов","Пермь","Свердловск"],0],
+["Сколько ленинградцев, по подсчётам историка П. Микова, эвакуировали в Пермь?",["около 379 тыс.","около 37 тыс.","около 3,7 млн"],0],
+["Где в Перми разместили эвакуированные экспонаты Русского музея?",["В Пермской галерее","В цехе Мотовилихи","На Речном вокзале"],0],
+["Чей кожух колеса вмонтирован в монумент «Эвакуация»?",["Парохода «Вера Фигнер»","Крейсера «Аврора»","Ледокола «Красин»"],0]];
+var MODES={city:{y0:1723,y1:2026,cats:["ind","trans","cult","rel","sci"]},war:{y0:0,y1:47,cats:["prod","evac","cult","med","mem"]}};
+// в режиме войны ползунок идёт по месяцам: 0 = июнь 1941, 47 = май 1945
+var MN=["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+function ymOf(i){var k=5+i;return {y:1941+Math.floor(k/12),m:k%12};}
+function idxOf(y,m){return Math.max(0,(y-1941)*12+m-5);}
+function start(p){if(p.mode!=="war")return p.y;if(p.d){var a=p.d.split("-");return idxOf(+a[0],+a[1]-1);}return idxOf(p.y,0);}
 var EPS={city:EP,war:EPW},QS={city:Q,war:QW},mode="city";
 PINS.forEach(function(p){p.mode=p.mode||"city";});
-PINS.forEach(function(p){if(p.ref){var r=PINS.filter(function(q){return q.n===p.ref&&q.mode==="city";})[0];if(r)p.p=r.p;}});
+PINS.forEach(function(p){if(p.ref){var r=PINS.filter(function(q){return q.n===p.ref&&q.mode==="city";})[0];if(r)p.p=p.off?[r.p[0]+p.off[0],r.p[1]+p.off[1]]:r.p;}});
 var LL=function(p){return ol.proj.fromLonLat([p[1],p[0]]);};
 var D=function(a,b){return ol.sphere.getDistance([a[1],a[0]],[b[1],b[0]]);};
 var gf=new ol.Feature();
-gf.setStyle(new ol.style.Style({fill:new ol.style.Fill({color:"rgba(168,67,31,.15)"}),stroke:new ol.style.Stroke({color:"#a8431f",width:1})}));
+gf.setStyle(new ol.style.Style({fill:new ol.style.Fill({color:"rgba(179,32,42,.15)"}),stroke:new ol.style.Stroke({color:"#b3202a",width:1})}));
 var growLayer=new ol.layer.Vector({source:new ol.source.Vector({features:[gf]})});
 var pinSrc=new ol.source.Vector();
-var pinLayer=new ol.layer.Vector({source:pinSrc,style:new ol.style.Style({image:new ol.style.Circle({radius:9,fill:new ol.style.Fill({color:"#a8431f"}),stroke:new ol.style.Stroke({color:"#fff",width:2})})})});
+var pinLayer=new ol.layer.Vector({source:pinSrc,style:new ol.style.Style({image:new ol.style.Circle({radius:9,fill:new ol.style.Fill({color:"#b3202a"}),stroke:new ol.style.Stroke({color:"#fff",width:2})})})});
 var map=new ol.Map({target:"map",layers:[new ol.layer.Tile({className:"tilebase",source:new ol.source.OSM()}),growLayer,pinLayer],view:new ol.View({center:LL(C),zoom:12,minZoom:9,maxZoom:18})});
 function setGrow(r){gf.setGeometry(ol.geom.Polygon.circular([C[1],C[0]],r,64).transform("EPSG:4326","EPSG:3857"));}
 function hit(e){return map.forEachFeatureAtPixel(e.pixel,function(f){return f;},{layerFilter:function(l){return l===pinLayer;},hitTolerance:6});}
@@ -150,23 +167,24 @@ function build(){
  sl.min=M.y0;sl.max=M.y1;
  $("chips").innerHTML="";$("eras").innerHTML="";
  M.cats.forEach(function(k){on[k]=true;var b=mk("button",CATS[k],"on");b.onclick=function(){on[k]=!on[k];b.className=on[k]?"on":"";show();};$("chips").appendChild(b);});
- EPS[mode].forEach(function(e){var b=mk("button",e.y);b.onclick=function(){sl.value=e.y;sel=null;show();};$("eras").appendChild(b);});
+ EPS[mode].forEach(function(e){var b=mk("button",e.y);b.onclick=function(){sl.value=mode==="war"?idxOf(e.y,0):e.y;sel=null;show();};$("eras").appendChild(b);});
  [].forEach.call($("modes").children,function(b){b.className=b.getAttribute("data-m")===mode?"on":"";});
  growLayer.setVisible(mode==="city");
 }
-function setMode(k,y){mode=k;sel=null;build();sl.value=y||MODES[k].y0;$("quiz").hidden=true;$("msg").textContent="";map.getView().animate({center:LL(C),zoom:12,duration:300});show();}
+function setMode(k,y){stop();mode=k;sel=null;build();sl.value=(y===undefined?MODES[k].y0:y);$("quiz").hidden=true;$("msg").textContent="";map.getView().animate({center:LL(C),zoom:12,duration:300});show();}
 [].forEach.call($("modes").children,function(b){b.onclick=function(){setMode(b.getAttribute("data-m"));};});
 function pick(p){sel=p;map.getView().animate({center:LL(p.p),zoom:15,duration:400});show();}
 function addM(p){if(!p.p||p.f)return;p.f=new ol.Feature({geometry:new ol.geom.Point(LL(p.p))});p.f.set("pin",p);}
 PINS.forEach(function(p){addM(p);});
 function rad(y){for(var i=1;i<AR.length;i++){if(y<=AR[i][0]){var a=AR[i-1],b=AR[i];return a[1]+(b[1]-a[1])*(y-a[0])/(b[0]-a[0]);}}return AR[AR.length-1][1];}
 function show(){
- var y=+sl.value,vl=[];
- $("year").textContent=y;
+ var t=+sl.value,y=t,vl=[];
+ if(mode==="war"){var o=ymOf(t);y=o.y;$("year").textContent=MN[o.m]+" "+o.y;}else $("year").textContent=y;
+ $("year").style.fontSize=mode==="war"?"30px":"";
  $("name").textContent=mode==="war"?"Молотов · война":(y<1781?"Егошихинский завод":(y>=1940&&y<1957?"Молотов":"Пермь"));
- setGrow(rad(y));
+ if(mode==="city")setGrow(rad(y));
  var s=y<1917?.85:(y<1991?.4:0),te=document.querySelector("#map .tilebase");if(te)te.style.filter=s?"sepia("+s+")":"none";
- PINS.forEach(function(p){var v=p.p&&p.mode===mode&&on[p.c]&&y>=p.y;if(p.f){if(v&&!p.in){pinSrc.addFeature(p.f);p.in=true;}if(!v&&p.in){pinSrc.removeFeature(p.f);p.in=false;}}if(v)vl.push(p);});
+ PINS.forEach(function(p){var v=p.p&&p.mode===mode&&on[p.c]&&t>=start(p);if(p.f){if(v&&!p.in){pinSrc.addFeature(p.f);p.in=true;}if(!v&&p.in){pinSrc.removeFeature(p.f);p.in=false;}}if(v)vl.push(p);});
  $("list").innerHTML="";
  vl.forEach(function(p){var b=mk("button",p.n+" · "+p.y);b.onclick=function(){pick(p);};$("list").appendChild(b);});
  if(!vl.length)$("list").textContent="Для выбранных года и категорий мест пока нет.";
@@ -185,7 +203,7 @@ $("nb").onclick=function(){
  navigator.geolocation.getCurrentPosition(function(g){
   var a=[g.coords.latitude,g.coords.longitude],b=null,d=1e12;
   PINS.forEach(function(p){if(p.p&&p.mode==="city"){var x=D(a,p.p);if(x<d){d=x;b=p;}}});
-  mode="city";build();sl.value=2026;
+  stop();mode="city";build();sl.value=2026;
   $("msg").textContent="Ближайшее место: "+b.n+", примерно "+(d<1000?Math.round(d)+" м":(d/1000).toFixed(1)+" км")+" от вас.";
   pick(b);
  },function(){$("msg").textContent="Не удалось определить местоположение.";});
@@ -204,7 +222,10 @@ function quiz(n,sc){
   setTimeout(function(){quiz(n+1,sc+(i===QQ[n][2]?1:0));},900);};q.appendChild(b);});
 }
 $("qz").onclick=function(){quiz(0,0);$("quiz").scrollIntoView({behavior:"smooth"});};
-sl.oninput=show;
+var tm=null;
+function stop(){if(tm){clearInterval(tm);tm=null;$("pl").textContent="▶ Воспроизвести";}}
+$("pl").onclick=function(){if(tm){stop();return;}var M=MODES[mode],st=mode==="war"?1:3;if(+sl.value>=M.y1)sl.value=M.y0;$("pl").textContent="⏸ Пауза";tm=setInterval(function(){var v=+sl.value+st;if(v>=M.y1){v=M.y1;stop();}sl.value=v;show();},mode==="war"?450:180);};
+sl.oninput=function(){stop();show();};
 var mm=/m=(\w+)/.exec(location.hash),m=/y=(\d+)/.exec(location.hash),pm=/p=(\d+)/.exec(location.hash);
 if(mm&&MODES[mm[1]])mode=mm[1];
 build();
